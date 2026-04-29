@@ -101,7 +101,7 @@ __device__ int efa_cuda_wr_set_sge(void *wr_buf, uint32_t lkey, uint64_t addr, u
 __device__ int efa_cuda_start_sq_batch(efa_cuda_qp *qp, int batch_size);
 __device__ int efa_cuda_sq_batch_place_wr(efa_cuda_qp *qp, int index_in_batch, void *wr_buf);
 __device__ void efa_cuda_flush_sq_wrs(efa_cuda_qp *qp);
-__device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint64_t addr, uint32_t length, uint32_t lkey);
+__device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint16_t req_id, uint64_t addr, uint32_t length, uint32_t lkey);
 __device__ void efa_cuda_flush_rq_wrs(efa_cuda_qp *qp);
 ```
 
@@ -226,7 +226,7 @@ __global__ void rdma_write_imm_kernel(efa_cuda_qp *qp, void *local_data,
 ```cuda
 __global__ void recv_kernel(efa_cuda_qp *qp, efa_cuda_cq *cq, void *recv_buf, size_t len) {
     // Post receive work request
-    efa_cuda_post_recv_wr(qp, (uint64_t)recv_buf, len, recv_lkey);
+    efa_cuda_post_recv_wr(qp, 0, (uint64_t)recv_buf, len, recv_lkey);
     efa_cuda_flush_rq_wrs(qp);
 
     // Poll for receive completion

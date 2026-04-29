@@ -56,7 +56,7 @@ __device__ int efa_cuda_start_sq_batch(efa_cuda_qp *qp, int batch_size);
 
 __device__ int efa_cuda_sq_batch_place_wr(efa_cuda_qp *qp, int index_in_batch, void *wr_buf);
 
-__device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint64_t addr, uint32_t length, uint32_t lkey);
+__device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint16_t req_id, uint64_t addr, uint32_t length, uint32_t lkey);
 
 __device__ void efa_cuda_flush_rq_wrs(efa_cuda_qp *qp);
 

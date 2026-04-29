@@ -388,7 +388,7 @@ __device__ int efa_cuda_sq_batch_place_wr(efa_cuda_qp *qp, int index_in_batch, v
 	return 0;
 }
 
-__device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint64_t addr, uint32_t length, uint32_t lkey)
+__device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint16_t req_id, uint64_t addr, uint32_t length, uint32_t lkey)
 {
 	struct efa_io_rx_desc wqe = {0};
 	uint32_t rq_desc_offset;
@@ -400,6 +400,7 @@ __device__ int efa_cuda_post_recv_wr(efa_cuda_qp *qp, uint64_t addr, uint32_t le
 	wqe.buf_addr_lo = addr;
 	wqe.buf_addr_hi = addr >> 32;
 	wqe.length = length;
+	wqe.req_id = req_id;
 
 	/* Copy descriptor to RX ring */
 	rq_desc_offset = (qp->rq.wq.pc & qp->rq.wq.queue_mask) * sizeof(wqe);
