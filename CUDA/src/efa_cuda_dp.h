@@ -30,6 +30,10 @@ enum efa_cuda_wc_opcode {
 	EFA_CUDA_WC_RECV_RDMA_WITH_IMM,
 };
 
+enum efa_cuda_processing_hint {
+	EFA_CUDA_PROCESSING_HINT_BURST_PPS_SENSITIVE = 1 << 0,
+};
+
 struct efa_cuda_cq {
 	uint64_t comp_mask;
 	uint32_t entry_size;

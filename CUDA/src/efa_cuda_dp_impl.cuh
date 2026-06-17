@@ -339,6 +339,17 @@ __device__ int efa_cuda_wr_set_sge(void *wr_buf, uint32_t lkey, uint64_t addr, u
 	return 0;
 }
 
+__device__ void efa_cuda_wr_set_processing_hints(void *wr_buf, uint32_t hints)
+{
+	struct efa_io_tx_wqe *wqe = (struct efa_io_tx_wqe *)wr_buf;
+	uint32_t io_hints = 0;
+
+	if (hints & EFA_CUDA_PROCESSING_HINT_BURST_PPS_SENSITIVE)
+		io_hints |= EFA_IO_PROCESSING_HINT_BURST_PPS_SENSITIVE;
+
+	EFA_SET(&wqe->meta.ctrl3, EFA_IO_TX_META_DESC_PROCESSING_HINTS, io_hints);
+}
+
 __device__ inline int efa_cuda_get_wqe_phase(efa_cuda_wq *wq, uint32_t index_in_batch)
 {
 	return wq->phase ^ (((wq->pc & wq->queue_mask) + index_in_batch) >> wq->queue_size_shift);

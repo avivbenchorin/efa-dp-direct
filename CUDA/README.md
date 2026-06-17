@@ -94,6 +94,7 @@ __device__ int efa_cuda_init_rdma_write_imm_wr(void *wr_buf, uint16_t wr_id, uin
 __device__ void efa_cuda_wr_set_remote(void *wr_buf, uint16_t ah, uint32_t remote_qpn, uint32_t remote_qkey);
 __device__ int efa_cuda_wr_set_inline_data(void *wr_buf, void *addr, size_t length);
 __device__ int efa_cuda_wr_set_sge(void *wr_buf, uint32_t lkey, uint64_t addr, uint32_t length);
+__device__ void efa_cuda_wr_set_processing_hints(void *wr_buf, uint32_t hints);
 ```
 
 #### Work Queue Operations

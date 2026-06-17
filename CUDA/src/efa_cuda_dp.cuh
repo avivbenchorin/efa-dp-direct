@@ -50,6 +50,8 @@ __device__ int efa_cuda_wr_set_inline_data(void *wr_buf, void *addr, size_t leng
 
 __device__ int efa_cuda_wr_set_sge(void *wr_buf, uint32_t lkey, uint64_t addr, uint32_t length);
 
+__device__ void efa_cuda_wr_set_processing_hints(void *wr_buf, uint32_t hints);
+
 __device__ void efa_cuda_flush_sq_wrs(efa_cuda_qp *qp);
 
 __device__ int efa_cuda_start_sq_batch(efa_cuda_qp *qp, int batch_size);
