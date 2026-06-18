@@ -41,6 +41,10 @@ struct efa_cuda_cq *efa_cuda_create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t
 void efa_cuda_destroy_cq(struct efa_cuda_cq *d_cq);
 struct efa_cuda_qp *efa_cuda_create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen);
 void efa_cuda_destroy_qp(struct efa_cuda_qp *d_qp);
+
+int efa_cuda_init_cq(struct efa_cuda_cq *cq, struct efa_cuda_cq_attrs *attrs, uint32_t inlen);
+int efa_cuda_init_qp(struct efa_cuda_qp *qp, struct efa_cuda_qp_attrs *attrs, uint32_t inlen);
+
 int efa_cuda_get_version(int *major, int *minor, int *subminor);
 
 #ifdef __cplusplus
