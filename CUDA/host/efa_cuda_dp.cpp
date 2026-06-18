@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdint.h>
+#include <cuda_runtime.h>
 
-#include "efa_cuda_dp.cuh"
-#include "efa_cuda_dp_impl.cuh"
-#include "efa_io_defs.h"
+#include "efa_cuda_dp.h"
+#include "efa_cuda_dp_types.h"
 
 static bool is_buf_cleared(void *buf, size_t len)
 {
@@ -24,10 +24,7 @@ static bool is_buf_cleared(void *buf, size_t len)
 #define is_ext_cleared(ptr, inlen) \
 	is_buf_cleared((uint8_t *)ptr + sizeof(*ptr), inlen - sizeof(*ptr))
 
-
-namespace efa_cuda_dp {
-
-struct efa_cuda_cq *create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t inlen)
+struct efa_cuda_cq *efa_cuda_create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t inlen)
 {
 	cudaError_t cuda_err;
 
@@ -41,7 +38,6 @@ struct efa_cuda_cq *create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t inlen)
 		return nullptr;
 	}
 
-	// Allocate device CQ structure
 	efa_cuda_cq *d_cq;
 	cuda_err = cudaMalloc(&d_cq, sizeof(efa_cuda_cq));
 	if (cuda_err != cudaSuccess) {
@@ -50,7 +46,6 @@ struct efa_cuda_cq *create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t inlen)
 		return nullptr;
 	}
 
-	// Initialize and copy CQ structure
 	efa_cuda_cq h_cq = {};
 	h_cq.buf = attrs->buffer;
 	h_cq.entry_size = attrs->entry_size;
@@ -71,12 +66,12 @@ struct efa_cuda_cq *create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t inlen)
 	return d_cq;
 }
 
-void destroy_cq(efa_cuda_cq *d_cq)
+void efa_cuda_destroy_cq(efa_cuda_cq *d_cq)
 {
 	cudaFree(d_cq);
 }
 
-struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
+struct efa_cuda_qp *efa_cuda_create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
 {
 	cudaError_t cuda_err;
 
@@ -92,7 +87,6 @@ struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
 		return nullptr;
 	}
 
-	// Allocate device QP structure
 	efa_cuda_qp *d_qp;
 	cuda_err = cudaMalloc(&d_qp, sizeof(efa_cuda_qp));
 	if (cuda_err != cudaSuccess) {
@@ -101,10 +95,8 @@ struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
 		return nullptr;
 	}
 
-	// Initialize QP structure on host
 	efa_cuda_qp h_qp = {};
 
-	// Initialize SQ
 	h_qp.sq.wq.buf = attrs->sq_buffer;
 	h_qp.sq.wq.db = attrs->sq_doorbell;
 	h_qp.sq.wq.max_wqes = attrs->sq_num_entries;
@@ -120,7 +112,6 @@ struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
 	h_qp.sq.max_inline_data = 32;
 	h_qp.sq.max_rdma_sges = 2;
 
-	// Initialize RQ
 	h_qp.rq.wq.buf = attrs->rq_buffer;
 	h_qp.rq.wq.db = attrs->rq_doorbell;
 	h_qp.rq.wq.max_wqes = attrs->rq_num_entries;
@@ -133,7 +124,6 @@ struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
 	h_qp.rq.wq.pc = 0;
 	h_qp.rq.wq.phase = 1;
 
-	// Copy QP structure to device
 	cuda_err = cudaMemcpy(d_qp, &h_qp, sizeof(efa_cuda_qp), cudaMemcpyHostToDevice);
 	if (cuda_err != cudaSuccess) {
 		cudaFree(d_qp);
@@ -145,14 +135,14 @@ struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen)
 	return d_qp;
 }
 
-void destroy_qp(efa_cuda_qp *d_qp)
+void efa_cuda_destroy_qp(struct efa_cuda_qp *d_qp)
 {
-	if (d_qp) {
+	if (d_qp)
 		cudaFree(d_qp);
-	}
 }
 
-int get_version(int *major, int *minor, int *subminor) {
+int efa_cuda_get_version(int *major, int *minor, int *subminor)
+{
 	if (!major || !minor || !subminor)
 		return -EINVAL;
 
@@ -161,6 +151,4 @@ int get_version(int *major, int *minor, int *subminor) {
 	*subminor = EFA_CUDA_DP_VERSION_SUBMINOR;
 
 	return 0;
-}
-
 }

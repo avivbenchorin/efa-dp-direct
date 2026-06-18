@@ -10,20 +10,22 @@ This implementation provides CUDA device functions that allow GPU kernels to dir
 
 ```
 CUDA/
-├── src/                      # Source files
-│   ├── efa_cuda_dp.h         # C API header for host-side functions
-│   ├── efa_cuda_dp.cuh       # CUDA device API header and C++ namespace
-│   ├── efa_cuda_dp.cu        # CUDA implementation (device functions)
-│   ├── efa_cuda_dp.cpp       # Host-side wrapper functions
-│   ├── efa_cuda_dp_impl.cuh  # Direct inclusion for inline device functions
-│   └── efa_io_defs.h         # EFA I/O structure definitions
-├── Makefile                  # Build configuration
-└── README.md                 # This file
+├── common/
+│   └── efa_cuda_dp_types.h       # QP/CQ/WQ struct definitions (shared by host & device)
+├── device/
+│   ├── efa_cuda_dp.cuh           # Datapath enums and __device__ function declarations
+│   ├── efa_cuda_dp_impl.cuh      # __device__ function implementations (include in kernels)
+│   └── efa_io_defs.h             # EFA I/O HW structure definitions (internal)
+├── host/
+│   ├── efa_cuda_dp.h             # C API header: attribute structs, init signatures, version
+│   └── efa_cuda_dp.cpp           # Host-side create/destroy implementations
+├── Makefile
+└── README.md
 ```
 
 ## API Reference
 
-### Host-Side C API (`efa_cuda_dp.h`)
+### Host-Side C API (`host/efa_cuda_dp.h`)
 
 #### Queue Management
 ```c
@@ -61,7 +63,7 @@ struct efa_cuda_qp_attrs {
 
 **Note**: The `inlen` parameter enables compatibility checking - use `sizeof(attrs)` to allow the library to validate extended fields are zero.
 
-### Device-Side CUDA API (`efa_cuda_dp.cuh`)
+### Device-Side CUDA API (`device/efa_cuda_dp.cuh`)
 
 #### Completion Queue Operations
 ```cuda
@@ -110,17 +112,6 @@ __device__ void efa_cuda_flush_rq_wrs(efa_cuda_qp *qp);
 ```cuda
 __device__ bool efa_cuda_is_cq_compatible(efa_cuda_cq *cq);
 __device__ bool efa_cuda_is_qp_compatible(efa_cuda_qp *qp);
-```
-
-### C++ Namespace API (`efa_cuda_dp` namespace)
-```cpp
-namespace efa_cuda_dp {
-    struct efa_cuda_cq *create_cq(struct efa_cuda_cq_attrs *attrs, uint32_t inlen);
-    void destroy_cq(efa_cuda_cq *d_cq);
-    struct efa_cuda_qp *create_qp(struct efa_cuda_qp_attrs *attrs, uint32_t inlen);
-    void destroy_qp(efa_cuda_qp *d_qp);
-    int get_version(int *major, int *minor, int *subminor);
-}
 ```
 
 ## Version Checking and Compatibility
@@ -329,14 +320,17 @@ make
 
 This produces:
 - `build/libefacudadp.so` - Shared library
-- `build/include/` - Header files for distribution
 
 ### Linking with Applications
 ```bash
-nvcc -o myapp myapp.cu -Lbuild -lefacudadp -Ibuild/include
+# Host-side code (links against libefacudadp for create/destroy)
+g++ -o myapp_host myapp_host.cpp -ICUDA/host -ICUDA/common -Lbuild -lefacudadp -lcudart
+
+# CUDA kernel code (includes device headers directly)
+nvcc -o myapp_kernel myapp_kernel.cu -ICUDA/device -ICUDA/common
 ```
 
-For direct inline usage, include `efa_cuda_dp_impl.cuh` directly in your CUDA kernel code.
+For direct inline usage in CUDA kernels, include `efa_cuda_dp_impl.cuh` directly.
 
 ## Assumptions and Limitations
 

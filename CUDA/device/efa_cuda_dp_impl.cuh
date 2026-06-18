@@ -9,8 +9,7 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include "efa_cuda_dp.h"
-#include "efa_io_defs.h"
+#include "efa_cuda_dp.cuh"
 
 #define BIT(nr)		(1UL << (nr))
 
