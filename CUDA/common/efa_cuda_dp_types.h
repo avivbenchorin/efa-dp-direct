@@ -8,7 +8,7 @@
 
 #define EFA_CUDA_DP_VERSION_MAJOR 0
 #define EFA_CUDA_DP_VERSION_MINOR 0
-#define EFA_CUDA_DP_VERSION_SUBMINOR 1
+#define EFA_CUDA_DP_VERSION_SUBMINOR 2
 
 struct efa_cuda_cq {
 	uint64_t comp_mask;
